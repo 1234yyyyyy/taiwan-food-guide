@@ -65,6 +65,11 @@ nav.top .city-link.c-ml{background:#b9770e}#ml h2{border-color:#b9770e}#ml .num{
 nav.top .city-link.c-ch{background:#c0392b}#ch h2{border-color:#c0392b}#ch .num{background:#c0392b}
 nav.top .city-link.c-yu{background:#6c7a2b}#yu h2{border-color:#6c7a2b}#yu .num{background:#6c7a2b}
 .ph.wiki img{aspect-ratio:4/3}.r .placeholder span{font-size:40px}@media (max-width:560px){nav.top .wrap{max-width:1240px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}nav.top .wrap::-webkit-scrollbar{display:none}nav.top .city-link,nav.top a{flex:0 0 auto;white-space:nowrap}}
+.ni-box{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--mute);cursor:pointer;user-select:none;margin-left:auto;font-weight:400;white-space:nowrap}
+.ni-box input{margin:0;width:15px;height:15px;accent-color:var(--accent)}
+.r .ni-box{float:right;margin:0 0 0 8px}
+.ni-on>.att-head,.r.ni-on{opacity:.45}.ni-on>.att-head .ni-box,.r.ni-on .ni-box{opacity:1}
+#nib{position:fixed;left:14px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:9;display:none;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:10px 16px;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}
 </style><style>
 :root{--note-bg:#fff7e0;--note-line:#f0dca0;--r-bg:#fcfbf8;--ph-bg:#e9e4da;--ph-ink:#7a6f60;--badge-bg:#e5f3e8;--badge-ink:#1f6b35;--badge-line:#b9dfc3;--unk-bg:#eee;--unk-ink:#666;--unk-line:#d4d4d4;--nav-bg:rgba(255,255,255,.96);--foot-bg:#2b2724;--foot-ink:#e9e4da}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1917;--card:#24211e;--ink:#ece6dc;--mute:#a69d90;--line:#3a352f;--accent2:#7cb8d6;--note-bg:#3a3020;--note-line:#5c4b2a;--r-bg:#201d1a;--ph-bg:#2f2a25;--ph-ink:#a69d90;--badge-bg:#1e3a26;--badge-ink:#9fd8ad;--badge-line:#2f5c3b;--unk-bg:#2e2b28;--unk-ink:#aaa;--unk-line:#45403a;--nav-bg:rgba(30,27,24,.95);--foot-bg:#121110;color-scheme:dark}}
@@ -905,4 +910,29 @@ b.addEventListener('click',function(){var rm=window.matchMedia('(prefers-reduced
 })();
 </script>
 
+<button id="nib" type="button">送出不感興趣（0）</button>
+<script>
+(function(){var K='tfg_notint',st={};try{st=JSON.parse(localStorage.getItem(K)||'{}')}catch(e){}
+var btn=document.getElementById('nib');
+function save(){try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}var n=Object.keys(st).length;btn.textContent='送出不感興趣（'+n+'）';btn.style.display=n?'block':'none';}
+function mk(el,key,info,host,before){var l=document.createElement('label');l.className='ni-box';l.title='標記為不感興趣';
+ var cb=document.createElement('input');cb.type='checkbox';l.appendChild(cb);l.appendChild(document.createTextNode('不感興趣'));
+ if(before)host.insertBefore(l,host.firstChild);else host.appendChild(l);
+ if(st[key]){cb.checked=true;el.classList.add('ni-on')}
+ l.addEventListener('click',function(ev){ev.stopPropagation()});
+ cb.addEventListener('change',function(){if(cb.checked)st[key]=info;else delete st[key];el.classList.toggle('ni-on',cb.checked);save();});}
+document.querySelectorAll('article.att').forEach(function(a){var sec=a.closest('section.city'),city=sec?sec.querySelector('h2').textContent.trim():'';
+ var h3=a.querySelector('h3'),an=h3.querySelector('a')?h3.querySelector('a').textContent.trim():h3.textContent.trim();
+ mk(a,'a|'+a.id,{c:city,t:'attraction',n:an,id:a.id},h3,false);
+ a.querySelectorAll('li.r').forEach(function(r,i){var h4=r.querySelector('h4'),rn=h4?h4.textContent.trim():'',d=r.querySelector('.desc');
+  mk(r,'r|'+a.id+'|'+rn,{c:city,t:'restaurant',n:rn,at:an,id:a.id,h:d?d.textContent.trim():''},r.querySelector('.r-body')||r,true);});});
+save();
+btn.addEventListener('click',function(){var d=new Date(Date.now()+8*36e5).toISOString().slice(0,10),ks=Object.keys(st),lines=[],cut=0;
+ for(var i=0;i<ks.length;i++){var o=st[ks[i]],ln=o.t==='attraction'?'- [景點] '+o.c+' / '+o.n+' | #'+o.id:'- [餐廳] '+o.c+' / '+o.at+' / '+o.n+(o.h?' （'+o.h+'）':'')+' | #'+o.id;
+  if(encodeURIComponent(lines.join('\n')+ln).length>6000){cut=ks.length-i;break}lines.push(ln)}
+ var body='以下項目不感興趣，之後同主題／同類型的推薦請排除：\n\n'+lines.join('\n')+(cut?'\n\n（另有 '+cut+' 則因網址長度限制未列入，請送出後再按一次）':'');
+ window.open('https://github.com/1234yyyyyy/taiwan-food-guide/issues/new?labels=not-important&title='+encodeURIComponent('不感興趣回饋 '+d)+'&body='+encodeURIComponent(body),'_blank');
+ if(confirm('送出後要清除這些勾選嗎？（已列入的才會清除）')){for(var j=0;j<lines.length;j++)delete st[ks[j]];location.reload();}});
+})();
+</script>
 </body></html>
